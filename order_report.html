@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI Report</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #reportContainer {
+            height: 100vh; /* Use 100vh to take the full height of the viewport */
+            width: 100%;
+        }
+        iframe {
+            border-width: 0px !important;
+        }
+        .loader {
+            display: none; /* Hide the loader initially */
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 36s linear infinite; /* Apply animation */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .container {
+            width: 100%; /* Set width to 100% */
+            max-width: none; /* Remove max-width restriction */
+            height: 100vh; /* Set height to 100% of viewport height */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .button-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+
+        }
+        .bt_top {width: 98%;
+    text-align: right;
+    }
+
+
+
+        .button {
+            font-size: 18px;
+            color: #000;
+            text-decoration: none;
+            border: 1px solid #d3cece;
+    padding: 10px 10px 10px 10px;
+    background-color: #fff;
+    transition: background-color 0.2s, color 0.2s;
+    border-radius: 5px;
+
+
+        }
+        .button:hover {
+           background-color: #eee;
+    border-color: #dad9d9;
+        }
+
+
+}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI Report</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #reportContainer {
+            height: 100vh; /* Use 100vh to take the full height of the viewport */
+            width: 100%;
+        }
+        iframe {
+            border-width: 0px !important;
+        }
+        .loader {
+            display: none; /* Hide the loader initially */
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 36s linear infinite; /* Apply animation */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .container {
+            width: 100%; /* Set width to 100% */
+            max-width: none; /* Remove max-width restriction */
+            height: 100vh; /* Set height to 100% of viewport height */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .button-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+
+        }
+        .bt_top {width: 98%;
+    text-align: right;
+    }
+
+
+
+        .button {
+            font-size: 18px;
+            color: #000;
+            text-decoration: none;
+           border: 0px solid #d3cece;
+    padding: .375rem .75rem;
+    background-color: #fff;
+    transition: background-color 0.2s, color 0.2s;
+    border-radius: 5px;
+
+
+        }
+        .button:hover {
+           background-color: #eee;
+    border-color: #dad9d9;padding: 10px 10px;
+        }
+.alignment{    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 92%;    margin-bottom: 10px;}
+
+}
+
+
+
+/* Print Styles */
+@media print {
+    #reportContainer {
+        width: 100vw; /* Set the width to 100% of the viewport for print */
+    }
+    .container {
+        max-width: none; /* Remove the max-width for print */
+        box-shadow: none; /* Remove the box shadow for print */
+    }
+    @page {
+        size: landscape; /* Set the print orientation to landscape */
+        margin: 80mm; /* Adjust margins as needed */
+        width: 100vw; /* Set the width to 100% of the printed page */
+    }
+
+    /* Portrait */
+    @page {
+        size: portrait; /* Set the print orientation to portrait */
+        margin: 20mm; /* Adjust margins as needed */
+        width: 50%;
+
+    }
+
+
+
+    body {
+        overflow: auto; /* or hidden, scroll, etc. */
+        font-size: 12pt; /* Adjust the font size as needed */
+    }
+
+
+
+
+    /* Additional print-specific styles */
+}
+        #loader{display:none; vertical-align: middle;    margin-left: 5px;}
+    </style>
+    <script src="https://microsoft.github.io/PowerBI-JavaScript/demo/node_modules/jquery/dist/jquery.js"></script>
+    <script src="https://microsoft.github.io/PowerBI-JavaScript/demo/node_modules/powerbi-client/dist/powerbi.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="alignment">
+            <div></div>
+            <div></div>
+            <div>
+    <h2 style="font-size: 23px; font-family: sans-serif;">
+        BUSINESS OVERVIEW & OPPORTUNITY ANALYSIS <br>
+        <span style="margin-left: 25%;">{{ Jewelers_id }}</span>
+    </h2>
+</div>
+            <div class="bt_top1">
+            <button onclick="exportToCSV()" class="button">
+                <img id="exportIcon" width="20" src="https://freepngimg.com/thumb/microsoft/26677-8-excel-file.png" alt="Export to Excel" title="Export to Excel">
+            </button>
+            <div id="loader" class="loaderBox"><img width="20" src="https://i.ashidiamonds.com/images/NewImages/loader2.gif" alt="Loader"></div>
+
+        <button onclick="printReport()" class="button">
+           <img id="PrintIcon" width="20" src= "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB82WG1NnFJ1_lX_N_64q4d51EAqCkkPzWCg&usqp=CAU" alt="Print" title="Print">
+        </button>
+ <button onclick="openGmail('{{ Jewelers_id }}')" class="button"><img width="20" src="https://i.pinimg.com/originals/bb/18/bd/bb18bdbbef437b2d50518db5a8292c94.png" alt="Mail" title="Mail"></button>
+
+        </div>
+
+
+        </div>
+
+
+        <div id="reportContainer"></div>
+
+
+    </div>
+
+
+ <script type="text/javascript">
+    var report; // Define report variable globally
+
+    $(function() { // Ensure jQuery's document ready function is used.
+        var models = window['powerbi-client'].models;
+        var embedConfiguration = {
+            type: 'report',
+            accessToken: '{{ embed_token }}',
+            embedUrl: '{{ embed_url }}',
+            permissions: models.Permissions.All, // Use All for full control
+            settings: {
+                filterPaneEnabled: false,
+                navContentPaneEnabled: false
+            },
+            filters: [{
+                $schema: "http://powerbi.com/product/schema#basic",
+                target: {
+                    table: "ORDER_TABLE",
+                    column: "Account_id"
+                },
+
+                operator: "In",
+                values: ['{{ Jewelers_id1 }}']
+            }]
+        };
+
+        // Check for mobile layout
+        if ($(window).width() < 767) {
+            embedConfiguration.settings.layoutType = models.LayoutType.MobilePortrait;
+        }
+
+        // Embed the Power BI report
+        var reportContainer = $('#reportContainer')[0];
+        report = powerbi.embed(reportContainer, embedConfiguration); // Assign report globally
+
+        // Handle page navigation
+        report.on('pageChanged', function(event) {
+            var currentPage = event.detail.newPage.name;
+            // Compare the current page name with your target page
+            if (currentPage !== "ReportSection4f6efc02d8b2ef134d9b") {
+                $('.button').hide(); // This hides all buttons
+            } else {
+                $('.button').show(); // This shows all buttons
+            }
+        });
+
+        // Additional events can be handled here
+        report.on('loaded', function() {
+            console.log('Report loaded');
+            // Initial check to show/hide buttons
+            report.getPages().then(function(pages) {
+                var currentPage = pages.find(page => page.isActive).name;
+                if (currentPage !== "ReportSection4f6efc02d8b2ef134d9b") {
+                    $('.button').hide(); // This hides all buttons
+                } else {
+                    $('.button').show(); // This shows all buttons
+                }
+            });
+        });
+
+        report.on('error', function(event) {
+            console.error('Report load error', event.detail);
+        });
+    });
+
+     function printReport(orientation) {
+  var printStyle = document.createElement('style');
+  printStyle.type = 'text/css';
+  printStyle.innerHTML = `
+    @page { size: ${orientation}; }
+    @media print {
+      body { width: 100%; }
+    }
+  `;
+  document.head.appendChild(printStyle);
+  window.print();
+  document.head.removeChild(printStyle); // Clean up after print
+}
+</script>
+
+    <script>
+        // Add or remove the 'landscape' class dynamically based on user selection
+        function setOrientation(landscape) {
+            const reportContainer = document.getElementById('reportContainer');
+            reportContainer.classList.toggle('landscape', landscape);
+            reportContainer.classList.toggle('portrait', !landscape);
+        }
+    </script>
+
+        <script type="text/javascript">
+    function exportToCSV() {
+
+        let loader = document.getElementById("loader");
+        loader.style.display = "inline";
+
+        // Make an AJAX request to fetch the CSV data from the server with the dynamic filter value
+        var dynamicFilterValue = '{{ Jewelers_id }}';
+
+        fetch(`/download_csv/${dynamicFilterValue}`)
+            .then(response => {
+                if (response.ok) {
+                    // Convert the response to Blob object
+                    return response.blob();
+
+                }
+                throw new Error('Network response was not ok.');
+
+            })
+            .then(blob => {
+            loader.style.display = "none";
+                // Create a temporary anchor element to trigger the download
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = 'ASHI-Analytics_Report.xlsx'; // Set the filename for the downloaded file
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                // Toggle the visibility of the loader button back
+                document.getElementById('loaderButton').style.display = 'none';
+
+                    // Enable the export button
+                document.getElementById('exportButton').disabled = false;
+            })
+
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            document.getElementById('loaderButton').style.display = 'none';
+            document.getElementById('exportButton').disabled = false;
+            });
+    }
+</script>
+
+</script>
+
+
+
+</body>
+</html>
+          /* Print Styles */
+@media print {
+    #reportContainer {
+        width: 100vw; /* Set the width to 100% of the viewport for print */
+    }
+    .container {
+        max-width: none; /* Remove the max-width for print */
+        box-shadow: none; /* Remove the box shadow for print */
+    }
+    @page {
+        size: landscape; /* Set the print orientation to landscape */
+        margin: 80mm; /* Adjust margins as needed */
+        width: 100vw; /* Set the width to 100% of the printed page */
+    }
+
+    /* Portrait */
+    @page {
+        size: portrait; /* Set the print orientation to portrait */
+        margin: 20mm; /* Adjust margins as needed */
+        width: 50%;
+
+    }
+
+
+
+    body {
+        overflow: auto; /* or hidden, scroll, etc. */
+        font-size: 12pt; /* Adjust the font size as needed */
+    }
+
+
+
+
+    /* Additional print-specific styles */
+}
+        #loader{display:none; vertical-align: middle;    margin-left: 5px;}
+    </style>
+    <script src="https://microsoft.github.io/PowerBI-JavaScript/demo/node_modules/jquery/dist/jquery.js"></script>
+    <script src="https://microsoft.github.io/PowerBI-JavaScript/demo/node_modules/powerbi-client/dist/powerbi.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+
+
+
+        <div id="reportContainer"></div>
+        <div id="SlidePanelOverlay" onclick="closeSlideOutPanel()" style="display: none;"></div>
+
+
+    </div>
+
+<script>
+function openGmail(data) {
+    var jewelers_id = '{{ Jewelers_id }}';
+    var slideOutPanel = document.createElement('div');
+    slideOutPanel.id = 'slideOutPanel';
+    slideOutPanel.innerHTML = `
+     <div class="header">Email as Excel <button type="button" class="button01" onclick="closeSlideOutPanel()" style="float: right; border: 0px solid #000; background: #ccc0; font-size: 16px;">X</button></div>
+     <div class="email-form-container">
+        <div class="content">
+            <form id="emailForm" action="/send-email/${jewelers_id}" method="post" enctype="multipart/form-data">
+                <label for="recipient" class="label">To: </label>
+                <input type="text" id="recipientInput" name="recipient" class="input-text" placeholder="" required>
+                <div id="recipientContainer" class="email-container"></div>
+
+                <label for="cc" class="label">CC:</label>
+                <input type="text" id="ccInput" name="cc" class="input-text" placeholder="">
+                <div id="ccContainer" class="email-container"></div>
+                <label for="subject" class="label">Subject:</label>
+                <input type="text" id="subject" name="subject" class="input-text" value="ASHI ANALYTICS REPORT" required readonly>
+
+                <label for="body" class="label">Message:</label>
+                <textarea id="body" name="body" rows="10" class="input-text" required>Hello,
+
+Please find the attached file of ASHI ANALYTICS REPORT.
+
+Thanks & Regards,
+
+${data}</textarea>
+
+                <div class="footer">
+                    <button type="button" id="sendButton" class="button">Send</button>
+                    <button type="button" class="button" onclick="closeSlideOutPanel()" style="background: #bfbfbf;">Cancel</button>
+                </div>
+            </form>
+        </div>
+     </div>
+     <div id="successMessage" style="display: none; position: fixed; top: 20px; right: 20px; background-color: green; color: white; padding: 10px; border-radius: 5px;">
+     Email sent successfully!
+     </div>
+    `;
+    document.body.appendChild(slideOutPanel);
+    setTimeout(function() {
+        slideOutPanel.classList.add('open');
+        // Assuming you have jQuery, otherwise you need to implement this in plain JS
+        $('#SlidePanelOverlay').show();
+    }, 100);
+
+    var successMessage = document.getElementById('successMessage');
+
+    document.getElementById('sendButton').addEventListener('click', sendEmail);
+    initializeEmailInput('recipientInput', 'recipientContainer');
+    initializeEmailInput('ccInput', 'ccContainer');
+}
+
+function initializeEmailInput(inputId, containerId) {
+    var inputElement = document.getElementById(inputId);
+    var containerElement = document.getElementById(containerId);
+
+    inputElement.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            var email = inputElement.value.trim();
+            if (validateEmail(email)) {
+                containerElement.appendChild(createEmailTag(email));
+                inputElement.value = '';
+            } else {
+                alert('Please enter a valid email address.');
+            }
+        }
+    });
+}
+
+function createEmailTag(email) {
+    var tag = document.createElement('span');
+    tag.className = 'email-tag';
+    tag.textContent = email;
+
+    var removeBtn = document.createElement('span');
+    removeBtn.className = 'email-tag-remove';
+    removeBtn.textContent = ' x';
+    removeBtn.onclick = function() { tag.remove(); };
+
+    tag.appendChild(removeBtn);
+
+    return tag;
+}
+
+function sendEmail() {
+    var form = document.getElementById('emailForm');
+    var formData = new FormData(form);
+    var recipientEmails = getEmailsFromTags('recipientContainer');
+    var ccEmails = getEmailsFromTags('ccContainer');
+
+    formData.set('recipient', recipientEmails.join(', ')); // Overwrite with emails from tags
+    formData.set('cc', ccEmails.join(', ')); // Overwrite with emails from tags
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        var successMessage = document.getElementById('successMessage');
+        successMessage.style.display = 'block';
+        setTimeout(function() {
+            successMessage.style.display = 'none';
+        }, 10000);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while sending the email. Please try again later.');
+    });
+}
+
+function getEmailsFromTags(containerId) {
+    var containerElement = document.getElementById(containerId);
+    var tags = containerElement.getElementsByClassName('email-tag');
+    var emails = Array.from(tags).map(function(tag) {
+        return tag.firstChild.textContent;
+    });
+    return emails;
+}
+
+function closeSlideOutPanel() {
+    var slideOutPanel = document.getElementById('slideOutPanel');
+    if (slideOutPanel) {
+        slideOutPanel.classList.remove('open');
+        // Assuming you have jQuery, otherwise you need to implement this in plain JS
+        $('#SlidePanelOverlay').hide();
+        setTimeout(function() {
+            slideOutPanel.remove();
+        }, 300);
+    }
+}
+
+function validateEmail(email) {
+    var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(email);
+}
+
+</script>
+
+<script>
+$(document).ready(function(){
+  $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+
+
+<style>
+
+.email-container {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.email-tag {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    margin: 2px;
+    background-color: #e4e4e4;
+    border-radius: 16px;
+    font-size: 14px;
+}
+
+.email-tag-remove {
+    display: inline-block;
+    margin-left: 8px;
+    cursor: pointer;
+    color: #999;
+}
+
+/* Optional: Add a hover effect for the remove button */
+.email-tag-remove:hover {
+    color: #333;
+}
+
+
+  #slideOutPanel {
+    position: fixed;
+    top: 10%;
+    right: -350px; /* Start off-screen */
+    width: 750px; /* Width of panel */
+    height: 80vh;
+    background-color: #fff;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: right 0.3s ease-in-out;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Roboto', sans-serif;
+      border-radius: 10px;
+  }
+
+  #slideOutPanel.open {
+    right: 0;
+  }
+
+  .email-form-container {
+    padding: 20px;
+    overflow-y: auto;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .header {
+    background-color: #ffe4d3;
+    padding: 30px 24px;
+    font-size: 22px;
+    color: #333;
+    border-bottom: 0px solid #ddd;
+    text-align: left;
+    font-weight: bold;border-radius: 10px;
+  }
+
+  .label {
+    margin-top: 20px;
+    display: block;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .input-text, .textarea-field {
+    width: 90%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+
+  }
+
+  .textarea-field {
+    height: 100px; /* Adjust height for textarea */
+    resize: none; /* Disable resize */
+  }
+
+
+.button {
+
+    color: white;
+    padding: 10px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+
+  .button:hover {
+    background-color: #eee;
+  }
+
+  .footer {
+    padding: 10px 20px; /* Add padding on all sides */
+    border-top: 1px solid #ddd;
+    text-align: left; /* Align buttons to the left */
+  }
+
+  .footer .button {
+
+    background-color: #ff963f;
+    color: white;
+    padding: 8px 16px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+  }
+
+  .footer .button:last-child {
+    background-color: #ff7c2c; /* Different background color for the 'Close' button */
+  }
+
+  .footer .button:hover {
+    background-color: #f78c33; /* Darker blue when hovered */
+  }
+
+
+
+
+  .footer .button:last-child:hover {
+    background-color: #c1351d; /* Darker red when hovered for the 'Close' button */
+  }
+
+  /* Additional styles for consistency */
+  .button-container {
+    display: flex;
+    justify-content: flex-start; /* Align buttons to the start (left) */
+    gap: 10px; /* Space between buttons */
+  }
+    #SlidePanelOverlay {
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        left: 0;
+        top: 0;
+        background: rgba(0, 0, 0, 0.25);
+        z-index: 9990;
+    }
+
+
+  .email-bubble {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border-radius: 20px;
+    margin-right: 10px; /* Adjust as needed */
+}
+
+.email-bubble:hover {
+  background-color: #d4d4d4;
+}
+.input-text {
+  margin-top: 5px;
+  min-height: 20px; /* Adjust height as needed */
+}
+
+.close-button {
+    margin-left: 10px; /* Add space between email text and close button */
+    cursor: pointer;
+}
+
+</style>
+
+</body>
+</html>

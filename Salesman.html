@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI Report</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #reportContainer {
+            height: 100vh; /* Use 100vh to take the full height of the viewport */
+            width: 100%;
+        }
+        iframe {
+            border-width: 0px !important;
+        }
+        .loader {
+            display: none; /* Hide the loader initially */
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 36s linear infinite; /* Apply animation */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .container {
+            width: 100%; /* Set width to 100% */
+            max-width: none; /* Remove max-width restriction */
+            height: 100vh; /* Set height to 100% of viewport height */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .button-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+
+        }
+        .bt_top {width: 98%;
+    text-align: right;
+    }
+
+
+
+        .button {
+            font-size: 18px;
+            color: #000;
+            text-decoration: none;
+            border: 1px solid #d3cece;
+    padding: 10px 10px 10px 10px;
+    background-color: #fff;
+    transition: background-color 0.2s, color 0.2s;
+    border-radius: 5px;
+
+
+        }
+        .button:hover {
+           background-color: #eee;
+    border-color: #dad9d9;
+        }
+
+
+}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI Report</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #reportContainer {
+            height: 100vh; /* Use 100vh to take the full height of the viewport */
+            width: 100%;
+        }
+        iframe {
+            border-width: 0px !important;
+        }
+        .loader {
+            display: none; /* Hide the loader initially */
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 36s linear infinite; /* Apply animation */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .container {
+            width: 100%; /* Set width to 100% */
+            max-width: none; /* Remove max-width restriction */
+            height: 100vh; /* Set height to 100% of viewport height */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .button-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+
+        }
+        .bt_top {width: 98%;
+    text-align: right;
+    }
+
+
+
+        .button {
+            font-size: 18px;
+            color: #000;
+            text-decoration: none;
+           border: 0px solid #d3cece;
+    padding: .375rem .75rem;
+    background-color: #fff;
+    transition: background-color 0.2s, color 0.2s;
+    border-radius: 5px;
+
+
+        }
+        .button:hover {
+           background-color: #eee;
+    border-color: #dad9d9;padding: 10px 10px;
+        }
+.alignment{    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 92%;    margin-bottom: 10px;}
+
+}
+
+
+
+/* Print Styles */
+@media print {
+    #reportContainer {
+        width: 100vw; /* Set the width to 100% of the viewport for print */
+    }
+    .container {
+        max-width: none; /* Remove the max-width for print */
+        box-shadow: none; /* Remove the box shadow for print */
+    }
+    @page {
+        size: landscape; /* Set the print orientation to landscape */
+        margin: 80mm; /* Adjust margins as needed */
+        width: 100vw; /* Set the width to 100% of the printed page */
+    }
+
+    /* Portrait */
+    @page {
+        size: portrait; /* Set the print orientation to portrait */
+        margin: 20mm; /* Adjust margins as needed */
+        width: 50%;
+
+    }
+
+
+
+    body {
+        overflow: auto; /* or hidden, scroll, etc. */
+        font-size: 12pt; /* Adjust the font size as needed */
+    }
+
+
+
+
+    /* Additional print-specific styles */
+}
+        #loader{display:none; vertical-align: middle;    margin-left: 5px;}
+    </style>
+    <script src="https://microsoft.github.io/PowerBI-JavaScript/demo/node_modules/jquery/dist/jquery.js"></script>
+    <script src="https://microsoft.github.io/PowerBI-JavaScript/demo/node_modules/powerbi-client/dist/powerbi.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="alignment">
+            <div></div>
+            <div></div>
+            <div>
+    <h2 style="font-size: 23px; font-family: sans-serif;">
+        BUSINESS OVERVIEW & OPPORTUNITY ANALYSIS <br>
+        <span style="margin-left: 25%;">{{ Sales_id }}</span>
+    </h2>
+</div>
+            <div class="bt_top1">
+
+
+        <button onclick="printReport()" class="button">
+           <img id="PrintIcon" width="20" src= "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB82WG1NnFJ1_lX_N_64q4d51EAqCkkPzWCg&usqp=CAU" alt="Print" title="Print">
+        </button>
+
+
+        </div>
+
+
+        </div>
+
+
+        <div id="reportContainer"></div>
+
+
+    </div>
+
+
+ <script type="text/javascript">
+    var report; // Define report variable globally
+
+    $(function() { // Ensure jQuery's document ready function is used.
+        var models = window['powerbi-client'].models;
+        var embedConfiguration = {
+            type: 'report',
+            accessToken: '{{ embed_token }}',
+            embedUrl: '{{ embed_url }}',
+            permissions: models.Permissions.All, // Use All for full control
+            settings: {
+                filterPaneEnabled: false,
+                navContentPaneEnabled: false
+            },
+            filters: [{
+                $schema: "http://powerbi.com/product/schema#basic",
+                target: {
+                    table: "ORDER_TABLE",
+                    column: "SalesPerson"
+                },
+
+                operator: "In",
+                values: ['{{ Sales_id }}']
+            }]
+        };
+
+        // Check for mobile layout
+        if ($(window).width() < 767) {
+            embedConfiguration.settings.layoutType = models.LayoutType.MobilePortrait;
+        }
+
+        // Embed the Power BI report
+        var reportContainer = $('#reportContainer')[0];
+        report = powerbi.embed(reportContainer, embedConfiguration); // Assign report globally
+
+        // Handle page navigation
+        report.on('pageChanged', function(event) {
+            var currentPage = event.detail.newPage.name;
+            // Compare the current page name with your target page
+            if (currentPage !== "ReportSection4f6efc02d8b2ef134d9b") {
+                $('.button').hide(); // This hides all buttons
+            } else {
+                $('.button').show(); // This shows all buttons
+            }
+        });
+
+        // Additional events can be handled here
+        report.on('loaded', function() {
+            console.log('Report loaded');
+            // Initial check to show/hide buttons
+            report.getPages().then(function(pages) {
+                var currentPage = pages.find(page => page.isActive).name;
+                if (currentPage !== "ReportSection4f6efc02d8b2ef134d9b") {
+                    $('.button').hide(); // This hides all buttons
+                } else {
+                    $('.button').show(); // This shows all buttons
+                }
+            });
+        });
+
+        report.on('error', function(event) {
+            console.error('Report load error', event.detail);
+        });
+    });
+
+    function printReport() {
+        // Trigger the print dialog for the embedded report
+        report.print();
+    }
+</script>
+
+    <script>
+        // Add or remove the 'landscape' class dynamically based on user selection
+        function setOrientation(landscape) {
+            const reportContainer = document.getElementById('reportContainer');
+            reportContainer.classList.toggle('landscape', landscape);
+            reportContainer.classList.toggle('portrait', !landscape);
+        }
+    </script>
+
+
+
+</script>
+
+
+
+</body>
+</html>
+          /* Print Styles */
+@media print {
+    #reportContainer {
+        width: 100vw; /* Set the width to 100% of the viewport for print */
+    }
+    .container {
+        max-width: none; /* Remove the max-width for print */
+        box-shadow: none; /* Remove the box shadow for print */
+    }
+    @page {
+        size: landscape; /* Set the print orientation to landscape */
+        margin: 80mm; /* Adjust margins as needed */
+        width: 100vw; /* Set the width to 100% of the printed page */
+    }
+
+    /* Portrait */
+    @page {
+        size: portrait; /* Set the print orientation to portrait */
+        margin: 20mm; /* Adjust margins as needed */
+        width: 50%;
+
+    }
+
+
+
+    body {
+        overflow: auto; /* or hidden, scroll, etc. */
+        font-size: 12pt; /* Adjust the font size as needed */
+    }
+
+
+
+
+    /* Additional print-specific styles */
+}
+        #loader{display:none; vertical-align: middle;    margin-left: 5px;}
+    </style>
+    <script src="https://microsoft.github.io/PowerBI-JavaScript/demo/node_modules/jquery/dist/jquery.js"></script>
+    <script src="https://microsoft.github.io/PowerBI-JavaScript/demo/node_modules/powerbi-client/dist/powerbi.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+
+
+
+        <div id="reportContainer"></div>
+        <div id="SlidePanelOverlay" onclick="closeSlideOutPanel()" style="display: none;"></div>
+
+
+    </div>
+
+
+<script>
+$(document).ready(function(){
+  $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+
+
+
+
+
+</body>
+</html>
