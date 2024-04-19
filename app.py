@@ -152,6 +152,16 @@ def jewelers_order_report(data, data1):
     except Exception as e:
         app.logger.error(f"An error occurred in jewelers_order_report: {e}")
 
+@app.route('/refresh_token')
+def refresh_token():
+    try:
+        # Your logic to refresh the access token
+        new_token = handler.get_access_token() # Assuming `handler.get_access_token()` refreshes the token
+        return jsonify(accessToken=new_token)
+    except Exception as e:
+        app.logger.error(f"Error refreshing token: {e}")
+        return jsonify(error=str(e)), 500
+
 @app.route('/Report/Jewelers_id/Sales/<path:data>/Order')
 def jewelers_order_report1(data):
     try:
