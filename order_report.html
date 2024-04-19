@@ -200,9 +200,9 @@
             <div></div>
             <div></div>
             <div>
-    <h2 style="font-size: 23px; font-family: sans-serif;">
+    <h2 style="font-size: 23px; font-family: sans-serif;text-align: center;">
         BUSINESS OVERVIEW & OPPORTUNITY ANALYSIS <br>
-        <span style="margin-left: 25%;">{{ Jewelers_id }}</span>
+        <span>{{ Jewelers_id }}</span>
     </h2>
 </div>
             <div class="bt_top1">
@@ -227,15 +227,15 @@
 
     </div>
 
-
- <script type="text/javascript">
+<script type="text/javascript">
     var report; // Define report variable globally
+    var tokenExpiry = Date.now() + 3600000; // Assuming token expiry is 1 hour after it was fetched
 
     $(function() { // Ensure jQuery's document ready function is used.
         var models = window['powerbi-client'].models;
         var embedConfiguration = {
             type: 'report',
-            accessToken: '{{ embed_token }}',
+            accessToken: '{{ embed_token }}', // Initial token
             embedUrl: '{{ embed_url }}',
             permissions: models.Permissions.All, // Use All for full control
             settings: {
@@ -248,42 +248,35 @@
                     table: "ORDER_TABLE",
                     column: "Account_id"
                 },
-
                 operator: "In",
                 values: ['{{ Jewelers_id1 }}']
             }]
         };
 
-        // Check for mobile layout
         if ($(window).width() < 767) {
             embedConfiguration.settings.layoutType = models.LayoutType.MobilePortrait;
         }
 
-        // Embed the Power BI report
         var reportContainer = $('#reportContainer')[0];
         report = powerbi.embed(reportContainer, embedConfiguration); // Assign report globally
 
-        // Handle page navigation
         report.on('pageChanged', function(event) {
             var currentPage = event.detail.newPage.name;
-            // Compare the current page name with your target page
             if (currentPage !== "ReportSection4f6efc02d8b2ef134d9b") {
-                $('.button').hide(); // This hides all buttons
+                $('.button').hide();
             } else {
-                $('.button').show(); // This shows all buttons
+                $('.button').show();
             }
         });
 
-        // Additional events can be handled here
         report.on('loaded', function() {
             console.log('Report loaded');
-            // Initial check to show/hide buttons
             report.getPages().then(function(pages) {
                 var currentPage = pages.find(page => page.isActive).name;
                 if (currentPage !== "ReportSection4f6efc02d8b2ef134d9b") {
-                    $('.button').hide(); // This hides all buttons
+                    $('.button').hide();
                 } else {
-                    $('.button').show(); // This shows all buttons
+                    $('.button').show();
                 }
             });
         });
@@ -291,21 +284,44 @@
         report.on('error', function(event) {
             console.error('Report load error', event.detail);
         });
+
+        // Function to refresh the access token before it expires
+        function refreshAccessToken() {
+            var millisecondsBeforeExpiry = tokenExpiry - Date.now() - 60000; // Refresh 1 minute before expiry
+            setTimeout(function() {
+                // AJAX request to Flask endpoint that refreshes the token
+                $.ajax({
+                    url: '/refresh_token', // Endpoint to refresh token
+                    method: 'GET',
+                    success: function(response) {
+                        report.setAccessToken(response.accessToken);
+                        tokenExpiry = Date.now() + 3600000; // Reset token expiry time
+                        refreshAccessToken(); // Reschedule the next refresh
+                    },
+                    error: function() {
+                        console.error('Failed to refresh token');
+                    }
+                });
+            }, millisecondsBeforeExpiry);
+        }
+
+        // Initial call to refresh token
+        refreshAccessToken();
     });
 
-     function printReport(orientation) {
-  var printStyle = document.createElement('style');
-  printStyle.type = 'text/css';
-  printStyle.innerHTML = `
-    @page { size: ${orientation}; }
-    @media print {
-      body { width: 100%; }
+    function printReport(orientation) {
+        var printStyle = document.createElement('style');
+        printStyle.type = 'text/css';
+        printStyle.innerHTML = `
+            @page { size: ${orientation}; }
+            @media print {
+                body { width: 100%; }
+            }
+        `;
+        document.head.appendChild(printStyle);
+        window.print();
+        document.head.removeChild(printStyle); // Clean up after print
     }
-  `;
-  document.head.appendChild(printStyle);
-  window.print();
-  document.head.removeChild(printStyle); // Clean up after print
-}
 </script>
 
     <script>
@@ -414,9 +430,10 @@
 
         <div id="reportContainer"></div>
         <div id="SlidePanelOverlay" onclick="closeSlideOutPanel()" style="display: none;"></div>
+<div id="popupBox" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; border: 1px solid #ccc; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); z-index: 999;">
+    <p style="margin: 0;">Email will be sent in a few minutes.</p>
+</div>
 
-
-    </div>
 
 <script>
 function openGmail(data) {
@@ -430,7 +447,7 @@ function openGmail(data) {
             <form id="emailForm" action="/send-email/${jewelers_id}" method="post" enctype="multipart/form-data">
                 <label for="recipient" class="label">To: </label>
                 <input type="text" id="recipientInput" name="recipient" class="input-text" placeholder="" required>
-                <div id="recipientContainer" class="email-container"></div>
+               <div id="recipientContainer" class="email-container"></div>
 
                 <label for="cc" class="label">CC:</label>
                 <input type="text" id="ccInput" name="cc" class="input-text" placeholder="">
@@ -514,6 +531,23 @@ function sendEmail() {
     formData.set('recipient', recipientEmails.join(', ')); // Overwrite with emails from tags
     formData.set('cc', ccEmails.join(', ')); // Overwrite with emails from tags
 
+    // Show "Email will be sent in a few minutes" popup before sending
+    var popupBox = document.getElementById('popupBox');
+    popupBox.textContent = 'Email will be sent in a few minutes.';
+    popupBox.style.display = 'block';
+    popupBox.style.position = 'fixed'; // Use fixed positioning
+    popupBox.style.top = '20px'; // Position from the top of the viewport
+    popupBox.style.left = '90%'; // Position from the right of the viewport
+    popupBox.style.backgroundColor = '#ff963f'; // Set background color for in-progress message
+    popupBox.style.color = 'white';
+    popupBox.style.padding = '5px 10px'; // Reduced padding
+    popupBox.style.borderRadius = '5px';
+    popupBox.style.fontSize = '15px'; // Smaller font size
+    popupBox.style.maxWidth = '250px'; // Maximum width set for the popup box
+    popupBox.style.whiteSpace = 'nowrap'; // Prevents text from wrapping
+    popupBox.style.overflow = 'hidden'; // Prevents content from spilling out
+    popupBox.style.textOverflow = 'ellipsis'; // Adds an ellipsis if text is too long
+
     fetch(form.action, {
         method: 'POST',
         body: formData
@@ -522,18 +556,21 @@ function sendEmail() {
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
+        // Update the popup message to "Email sent successfully!" after email is successfully sent
+        popupBox.textContent = 'Email sent successfully!';
+        popupBox.style.backgroundColor = 'green'; // Color indicating success
+        setTimeout(function() {
+            popupBox.style.display = 'none';
+        }, 5000);
         return response.json();
     })
     .then(data => {
-        var successMessage = document.getElementById('successMessage');
-        successMessage.style.display = 'block';
-        setTimeout(function() {
-            successMessage.style.display = 'none';
-        }, 10000);
+        // Additional processing if needed
     })
     .catch(error => {
         console.error('Error:', error);
         alert('An error occurred while sending the email. Please try again later.');
+        popupBox.style.display = 'none'; // Hide the popup in case of error
     });
 }
 
@@ -578,7 +615,7 @@ $(document).ready(function(){
     display: flex;
     flex-wrap: wrap;
     padding: 5px;
-    border: 1px solid #ccc;
+
     border-radius: 4px;
 }
 
@@ -644,7 +681,7 @@ $(document).ready(function(){
   }
 
   .label {
-    margin-top: 20px;
+    margin-top: 7px;
     display: block;
     font-weight: bold;
     color: #333;
